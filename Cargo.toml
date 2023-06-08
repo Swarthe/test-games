@@ -1,0 +1,18 @@
+[package]
+name = "game"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "3d"
+path = "src/3d/main.rs"
+
+[[bin]]
+name = "2d"
+path = "src/2d.rs"
+
+[dependencies]
+macroquad = "0.3.25"
+
+[profile.release]
+strip = true
