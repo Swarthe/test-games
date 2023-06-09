@@ -8,6 +8,8 @@
 
 solve the puzzle and be rewarded! you can also die
 
+![Screenshot](screenshot.png "cat and frog")
+
 ### controls
 
 | effect | input      |
