@@ -4,8 +4,8 @@ use crate::Textures;
 
 use macroquad::prelude::*;
 
-const SIZE: f32 = 1.0;
-const HALF: Vec3 = Vec3::splat(SIZE / 2.0);
+const DIM: Vec3 = Vec3::splat(1.0);
+const HALF: Vec3 = Vec3::splat(DIM.x / 2.0);
 
 pub struct Frog {
     pos: Vec3,
@@ -31,7 +31,7 @@ impl Frog {
 impl Mob for Frog {
     fn pos(&self) -> Vec3 { self.pos }
     fn vel(&self) -> Vec3 { self.vel }
-    fn dim(&self) -> Vec3 { Vec3::splat(SIZE) }
+    fn dim(&self) -> Vec3 { DIM }
 
     fn set_pos(&mut self, val: Vec3) { self.pos = val }
     fn set_vel(&mut self, val: Vec3) { self.vel = val }

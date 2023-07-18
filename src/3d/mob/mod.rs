@@ -4,6 +4,7 @@ use macroquad::prelude::*;
 
 pub mod player;
 pub mod frog;
+pub mod ball;
 
 /// for mobile entities
 pub trait Mob {
@@ -22,6 +23,15 @@ pub trait Mob {
     fn is_on_ground(&self) -> bool {
         is_on_ground(self.pos())
     }
+
+    ///// surface area in metres
+    //fn area(&self) -> f32 {
+    //    let dim = self.dim();
+
+    //    2.0 * dim.x * dim.y +
+    //    2.0 * dim.y * dim.z +
+    //    2.0 * dim.z * dim.x
+    //}
 
     fn intersects<M: Mob>(&self, other: &M) -> bool {
         let (min_a, min_b) = (self.pos(),         other.pos());

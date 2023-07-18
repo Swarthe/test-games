@@ -2,7 +2,7 @@ use Direction::*;
 use ZoomKind::*;
 
 use super::Mob;
-use super::frog::Frog;
+use super::{frog::Frog, ball::Ball};
 
 use crate::terrain;
 
@@ -10,9 +10,11 @@ use terrain::{VOID_HEIGHT, VOID_TRANSITION};
 
 use macroquad::prelude::*;
 
-// Average height in meters.
-const CAM_HEIGHT: f32 = 1.69;
-const CAM_POS: Vec3 = vec3(0.0, CAM_HEIGHT, 0.0);
+// Average dimensions in meters.
+const HEIGHT: f32 = 1.69;
+const WIDTH: f32 = 0.4;
+// Camera is laterally in the middle.
+const CAM_OFFSET: Vec3 = vec3(WIDTH / 2.0, HEIGHT, WIDTH / 2.0);
 
 const LOOK_SPEED: f32 = 0.02;
 const ZOOM_SPEED: f32 = 2.0;
@@ -23,7 +25,7 @@ const STRAFE_SPEED: f32 = WALK_SPEED / 2.0;
 const JUMP_SPEED: f32 = 10.0;
 
 const SPRINT_COEFF: f32 = 2.0;
-const PUSH_COEFF: f32 = 0.25;
+const PUSH_COEFF: f32 = 0.27;
 
 pub struct Player {
     cam: Camera3D,
@@ -148,22 +150,30 @@ impl Player {
         self.vel.y += JUMP_SPEED;
     }
 
+    /// this is the only function that actually moves the player
+    pub fn update(&mut self) {
+        self.apply_forces();
+        self.apply_vel();
+    }
+
     /// can also push upwards by jumping at the same time
     pub fn kick(&self, frog: &mut Frog) {
         frog.set_vel(frog.vel() + self.vel * PUSH_COEFF);
     }
 
-    /// this is the only function that actually moves the player
-    pub fn update(&mut self) {
-        self.apply_forces();
-        self.apply_vel();
+    pub fn throw_ball(&self) -> Ball {
+        // TODO: consts
+        let vel = self.front * 100.0 + Vec3::Y * 15.0;
+        let pos = self.cam.position - 0.2;
+
+        Ball::new(pos, vel)
     }
 }
 
 impl Default for Player {
     fn default() -> Self {
         let cam = Camera3D {
-            position: vec3(0.0, CAM_HEIGHT, 0.0),
+            position: CAM_OFFSET,
             up: Vec3::Y,
             target: vec3(1.0, 1.0, 0.0),    // Position + front.
             fovy: 45.3,
@@ -226,13 +236,12 @@ impl Player {
 }
 
 impl Mob for Player {
-    fn pos(&self) -> Vec3 { self.cam.position - CAM_POS }
+    fn pos(&self) -> Vec3 { self.cam.position - CAM_OFFSET }
     fn vel(&self) -> Vec3 { self.vel }
-    // Dimensions of an average human.
-    fn dim(&self) -> Vec3 { vec3(0.26, CAM_HEIGHT, 0.41) }
+    fn dim(&self) -> Vec3 { vec3(WIDTH, HEIGHT, WIDTH) }
 
     fn set_pos(&mut self, val: Vec3) {
-        self.cam.position = val + CAM_POS;
+        self.cam.position = val + CAM_OFFSET;
         self.cam.target = self.cam.position + self.front;
     }
 

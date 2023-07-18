@@ -3,7 +3,7 @@ mod terrain;
 mod mob;
 mod mouse;
 
-use mob::{player, frog};
+use mob::{player, frog, ball};
 
 use mob::Mob;
 
@@ -11,9 +11,17 @@ use textures::Textures;
 use terrain::Terrain;
 use player::Player;
 use frog::Frog;
+use ball::Ball;
 use mouse::Mouse;
 
 use macroquad::prelude::*;
+
+use ringbuf::Rb;
+
+use ringbuf::StaticRb as RingBuf;
+
+const FROG_COUNT: usize = 3;
+const BALLS_MAX: usize = 50;    // limits memory usage
 
 #[macroquad::main("future gastrointestinal treedee")]
 async fn main() -> Result<(), FileError> {
@@ -39,7 +47,8 @@ async fn main() -> Result<(), FileError> {
 struct World {
     terrain: Terrain,
     player: Player,
-    frogs: [Frog; 3]
+    frogs: [Frog; FROG_COUNT],
+    balls: RingBuf<Ball, BALLS_MAX>
 }
 
 impl World {
@@ -48,6 +57,7 @@ impl World {
         set_camera(self.player.cam());
         self.terrain.draw(txtr);
         self.frogs.iter().for_each(|f| f.draw(txtr));
+        self.balls.iter().for_each(|b| b.draw(txtr));
 
         set_default_camera();
         self.player.draw_view();
@@ -75,6 +85,10 @@ impl World {
             player.is_sprinting = false;
         }
 
+        if is_mouse_button_pressed(MouseButton::Left) {
+            self.balls.push_overwrite(player.throw_ball());
+        }
+
         // Don't walk on the air, unless you deserve it...
         if !player.can_move() { return }
 
@@ -86,18 +100,31 @@ impl World {
         if is_key_pressed(KeyCode::Space) { player.jump() }
         // for testing
         if is_key_pressed(KeyCode::Enter) { player.super_leap() }
-
     }
 
     fn update(&mut self) {
         let player = &mut self.player;
+        let frogs = &self.frogs;
 
         player.update();
-        if game_is_won(&self.frogs) { player.is_victorious = true }
+
+        let game_is_won = frogs[0].intersects(&frogs[1]) &&
+            frogs[1].intersects(&frogs[2]) &&
+            frogs.iter().all(Frog::is_outside_bounds);
+
+        if game_is_won { player.is_victorious = true }
 
         for f in &mut self.frogs {
             if player.intersects(f) { player.kick(f) }
             f.update();
+        }
+
+        for b in self.balls.iter_mut() {
+            for f in &mut self.frogs {
+                if b.intersects(f) { b.strike(f) }
+            }
+
+            b.update();
         }
 
         self.terrain.update(player);
@@ -106,16 +133,15 @@ impl World {
 
 impl Default for World {
     fn default() -> Self {
-        let frogs = [
-            Frog::new(vec3(4.0,  4.0, -4.0), VIOLET),
-            Frog::new(vec3(6.0,  4.0,  5.0), GREEN),
-            Frog::new(vec3(-5.0, 4.0,  2.0), BLUE)
-        ];
-
         Self {
             terrain: Terrain::default(),
             player: Player::default(),
-            frogs
+            frogs: [
+                Frog::new(vec3(4.0,  4.0, -4.0), VIOLET),
+                Frog::new(vec3(6.0,  4.0,  5.0), GREEN),
+                Frog::new(vec3(-5.0, 4.0,  2.0), BLUE)
+            ],
+            balls: RingBuf::default()
         }
     }
 }
@@ -124,10 +150,4 @@ fn seed_rand() {
     use std::process;
 
     rand::srand(process::id() as _);
-}
-
-fn game_is_won(frogs: &[Frog; 3]) -> bool {
-    frogs[0].intersects(&frogs[1]) &&
-    frogs[1].intersects(&frogs[2]) &&
-    frogs.iter().all(Frog::is_outside_bounds)
 }

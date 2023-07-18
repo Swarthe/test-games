@@ -89,6 +89,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-utils"
+version = "0.8.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a22b2d63d4d1dc0b7f1b6b2747dd0088008a9be28b6ddf0b1e7d335e3037294"
+dependencies = [
+ "cfg-if",
+]
+
+[[package]]
 name = "dasp_frame"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -137,6 +146,7 @@ name = "game"
 version = "0.1.0"
 dependencies = [
  "macroquad",
+ "ringbuf",
 ]
 
 [[package]]
@@ -349,6 +359,15 @@ dependencies = [
  "libc",
  "quad-alsa-sys",
  "winapi",
+]
+
+[[package]]
+name = "ringbuf"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79abed428d1fd2a128201cec72c5f6938e2da607c6f3745f769fabea399d950a"
+dependencies = [
+ "crossbeam-utils",
 ]
 
 [[package]]

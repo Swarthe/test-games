@@ -13,6 +13,7 @@ path = "src/2d.rs"
 
 [dependencies]
 macroquad = "0.3.25"
+ringbuf = { version = "0.3.3", default-features = false }
 
 [profile.release]
 strip = true

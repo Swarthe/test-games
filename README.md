@@ -19,6 +19,7 @@ solve the puzzle and be rewarded! you can also die
 | jump   | Space      |
 | look   | Mouse      |
 | zoom   | Q, E       |
+| throw  | Left click |
 | stats  | Tab        |
 
 and a secret ability... can you find it?
