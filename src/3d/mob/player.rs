@@ -163,7 +163,7 @@ impl Player {
 
     pub fn throw_ball(&self) -> Ball {
         // TODO: consts
-        let vel = self.front * 100.0 + Vec3::Y * 15.0;
+        let vel = self.front * 100.0 + Vec3::Y * 15.0 + self.vel;
         let pos = self.cam.position - 0.2;
 
         Ball::new(pos, vel)

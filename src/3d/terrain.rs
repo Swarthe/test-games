@@ -1,7 +1,7 @@
 use macroquad::prelude::*;
 
 use crate::mob::Mob;
-use crate::{player::Player, textures::Textures};
+use crate::{player::Player, assets::Textures};
 
 pub const VOID_HEIGHT: f32 = -600.0;
 pub const VOID_TRANSITION: f32 = 500.0;

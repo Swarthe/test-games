@@ -1,4 +1,4 @@
-mod textures;
+mod assets;
 mod terrain;
 mod mob;
 mod mouse;
@@ -7,7 +7,7 @@ use mob::{player, frog, ball};
 
 use mob::Mob;
 
-use textures::Textures;
+use assets::{Assets, Textures, Sounds};
 use terrain::Terrain;
 use player::Player;
 use frog::Frog;
@@ -15,6 +15,7 @@ use ball::Ball;
 use mouse::Mouse;
 
 use macroquad::prelude::*;
+use macroquad::audio::play_sound_once;
 
 use ringbuf::Rb;
 
@@ -25,7 +26,7 @@ const BALLS_MAX: usize = 50;    // limits memory usage
 
 #[macroquad::main("future gastrointestinal treedee")]
 async fn main() -> Result<(), FileError> {
-    let textures = Textures::load().await?;
+    let assets = Assets::load().await?;
     let mut world = World::default();
     let mut mouse = Mouse::read();
 
@@ -36,9 +37,9 @@ async fn main() -> Result<(), FileError> {
     loop {
         mouse.update();
 
-        world.draw(&textures);
-        world.handle_input(&mouse);
-        world.update();
+        world.draw(&assets.txtr);
+        world.handle_input(&mouse, &assets.snd);
+        world.update(&assets.snd);
 
         next_frame().await;
     }
@@ -63,7 +64,7 @@ impl World {
         self.player.draw_view();
     }
 
-    fn handle_input(&mut self, mouse: &Mouse) {
+    fn handle_input(&mut self, mouse: &Mouse, snd: &Sounds) {
         use player::{Direction::*, ZoomKind::*};
 
         let player = &mut self.player;
@@ -86,6 +87,7 @@ impl World {
         }
 
         if is_mouse_button_pressed(MouseButton::Left) {
+            play_sound_once(snd.woosh);
             self.balls.push_overwrite(player.throw_ball());
         }
 
@@ -102,7 +104,7 @@ impl World {
         if is_key_pressed(KeyCode::Enter) { player.super_leap() }
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, snd: &Sounds) {
         let player = &mut self.player;
         let frogs = &self.frogs;
 
@@ -121,7 +123,10 @@ impl World {
 
         for b in self.balls.iter_mut() {
             for f in &mut self.frogs {
-                if b.intersects(f) { b.strike(f) }
+                if b.intersects(f) {
+                    play_sound_once(snd.croak);
+                    b.strike(f);
+                }
             }
 
             b.update();
